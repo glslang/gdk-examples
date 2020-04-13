@@ -12,6 +12,7 @@ from conftest import create_liquid_session, create_session, issue_asset, fund_us
 from greenaddress import Session, json, init
 import wallycore as wally
 import base64
+import os
 
 
 h2b = wally.hex_to_bytes
@@ -106,8 +107,8 @@ class trezor_device(object):
         for i, txout in enumerate(transaction_outputs):
             if txout['is_fee']:
                 continue
-            out_vbfs.append(b'\x11'*32)
-            out_abfs.append(b'\x22'*32)
+            out_vbfs.append(os.urandom(32)) # TODO: check if HW is going to generate these
+            out_abfs.append(os.urandom(32)) # TODO: check if HW is going to generate these
             values.append(txout['satoshi'])
 
         abfs = in_abfs + out_abfs
@@ -137,6 +138,9 @@ class trezor_device(object):
                                        outs,
                                        prev_txes = None,
                                        details = proto.SignTx(version = 2, lock_time = required_data['transaction']['transaction_locktime']))
+
+        # with open('tx.txt', 'w') as f:
+        #    f.write(serialized_tx.hex())
 
         asset_commitments = []
         value_commitments = []
